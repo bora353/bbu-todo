@@ -74,7 +74,7 @@ export default function App() {
     }
     const d = new Date(val);
     const m = d.getMinutes();
-    const roundedM = Math.round(m / 10) * 10;
+    const roundedM = Math.round(m / 5) * 5;
     d.setMinutes(roundedM);
     
     const tzOffset = d.getTimezoneOffset() * 60000;
@@ -430,7 +430,7 @@ export default function App() {
               <input
                 type="datetime-local"
                 className="input-text"
-                step="600"
+                step="300"
                 value={dueDate}
                 onChange={handleDateChange}
               />
