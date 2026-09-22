@@ -142,8 +142,11 @@ export default function App() {
   }
 
   const saveTodo = async (e) => {
-    e.preventDefault()
-    if (!newTodo.trim()) return
+    if (e && e.preventDefault) e.preventDefault()
+    if (!newTodo.trim()) {
+      setIsModalOpen(false)
+      return
+    }
 
     let isoDueDate = null;
     if (selectedDate) {
@@ -553,7 +556,14 @@ export default function App() {
       </button>
 
       {/* Modal */}
-      <div className={`modal-overlay ${isModalOpen ? 'open' : ''}`}>
+      <div 
+        className={`modal-overlay ${isModalOpen ? 'open' : ''}`}
+        onClick={(e) => {
+          if (e.target.classList.contains('modal-overlay')) {
+            saveTodo(e);
+          }
+        }}
+      >
         <div className="modal-content">
           <div className="modal-header">
             <h2 className="modal-title">{editingId ? '할 일 수정' : '아자아자!'}</h2>
