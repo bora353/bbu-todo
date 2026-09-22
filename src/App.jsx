@@ -170,6 +170,7 @@ export default function App() {
 
   const toggleTodo = async (todo) => {
     const newStatus = !todo.completed
+    const completedAt = newStatus ? new Date().toISOString() : null;
     
     if (newStatus) {
       confetti({
@@ -180,8 +181,8 @@ export default function App() {
       })
     }
 
-    setTodos(prev => prev.map(t => t.id === todo.id ? { ...t, completed: newStatus } : t))
-    await supabase.from('todos').update({ completed: newStatus }).eq('id', todo.id)
+    setTodos(prev => prev.map(t => t.id === todo.id ? { ...t, completed: newStatus, completed_at: completedAt } : t))
+    await supabase.from('todos').update({ completed: newStatus, completed_at: completedAt }).eq('id', todo.id)
 
     if (newStatus && todo.recurrence && todo.recurrence !== 'none') {
       const nextDate = new Date(todo.due_date || new Date());
@@ -397,7 +398,7 @@ export default function App() {
             className="toggle-completed-btn"
             onClick={() => setViewCompleted(!viewCompleted)}
           >
-            {viewCompleted ? '다한 리스트 닫기' : `다한 리스트 보기 (${completedTodos.length}개)`}
+            {viewCompleted ? '완료됨 닫기' : `완료됨 (${completedTodos.length})`}
           </button>
           
           {viewCompleted && (
@@ -426,10 +427,10 @@ export default function App() {
                       <span className={`assignee ${todo.assignee}`}>
                         {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
                       </span>
-                      {todo.due_date && (
+                      {todo.completed_at && (
                         <span className="todo-date">
-                          <Calendar size={10} />
-                          {format(new Date(todo.due_date), 'MM/dd a h시', { locale: ko })}
+                          <Check size={10} />
+                          {format(new Date(todo.completed_at), 'MM/dd 완료', { locale: ko })}
                         </span>
                       )}
                     </div>
@@ -457,7 +458,7 @@ export default function App() {
             style={{ color: '#ff6b6b' }}
             onClick={() => setViewDeleted(!viewDeleted)}
           >
-            {viewDeleted ? '삭제된 리스트 닫기' : `삭제된 리스트 보기 (${deletedTodos.length}개)`}
+            {viewDeleted ? '삭제됨 닫기' : `삭제됨 (${deletedTodos.length})`}
           </button>
           
           {viewDeleted && (
