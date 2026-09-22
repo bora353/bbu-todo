@@ -408,7 +408,7 @@ export default function App() {
       <div className={`modal-overlay ${isModalOpen ? 'open' : ''}`}>
         <div className="modal-content">
           <div className="modal-header">
-            <h2 className="modal-title">{editingId ? '할 일 수정' : '새로운 할 일'}</h2>
+            <h2 className="modal-title">{editingId ? '할 일 수정' : '아자아자!'}</h2>
             <button className="close-btn" onClick={() => setIsModalOpen(false)}>
               <X size={20} />
             </button>
