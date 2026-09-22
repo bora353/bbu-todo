@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { sender, target } = req.body;
+  const { sender, target, taskText } = req.body;
 
   if (!sender || !target) {
     return res.status(400).json({ error: 'Missing sender or target' });
@@ -37,7 +37,9 @@ export default async function handler(req, res) {
 
     const payload = JSON.stringify({
       title: '👉 콕 찌르기!',
-      body: `${sender}님이 콕 찔렀어요! 할 일을 확인해볼까요?`,
+      body: taskText 
+        ? `${sender}님이 '${taskText}' 할 일을 콕 찔렀어요!`
+        : `${sender}님이 콕 찔렀어요! 할 일을 확인해볼까요?`,
     });
 
     const sendPromises = subscriptions.map((sub) => {

@@ -149,17 +149,18 @@ export default function App() {
     }
   }
 
-  const handlePoke = async () => {
-    // Call our Vercel Serverless Function to poke the other person
+  const handlePoke = async (taskText) => {
     const target = currentUser === '가은' ? '경민' : '가은';
     try {
       const res = await fetch('/api/poke', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender: currentUser, target: target })
+        body: JSON.stringify({ sender: currentUser, target: target, taskText })
       });
       if (res.ok) {
         alert(`${target}님을 콕 찔렀어요! 👉`);
+      } else if (res.status === 404) {
+        alert(`${target}님이 아직 앱에 접속하지 않아 알림을 받을 수 없습니다.`);
       } else {
         alert('콕 찌르기에 실패했습니다.');
       }
@@ -192,12 +193,7 @@ export default function App() {
     <div className="app-wrapper">
       <header className="header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div className="d-day-badge" style={{ marginBottom: '12px' }}>{dday}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', width: '100%', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: '28px', margin: 0 }}>우리는 쀼💕</h1>
-          <button className="poke-btn" onClick={handlePoke}>
-            👉 콕 찌르기
-          </button>
-        </div>
+        <h1 style={{ fontSize: '28px', margin: 0, width: '100%' }}>우리는 쀼💕</h1>
       </header>
 
       {/* Uncompleted List */}
@@ -228,6 +224,14 @@ export default function App() {
                     {format(new Date(todo.due_date || todo.created_at), 'MM/dd HH:mm', { locale: ko })}
                   </span>
                 )}
+              </div>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button className="delete-btn" onClick={() => handlePoke(todo.text)} title="상대방 콕 찌르기">
+                  <Bell size={16} />
+                </button>
+                <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
           ))
