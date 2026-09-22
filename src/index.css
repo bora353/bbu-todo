@@ -489,8 +489,8 @@ input[type="datetime-local"].input-text {
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--text-main);
-  color: var(--bg-gradient);
+  background: rgba(0, 0, 0, 0.85);
+  color: #ffffff;
   padding: 12px 24px;
   border-radius: 100px;
   font-size: 14px;
@@ -502,6 +502,14 @@ input[type="datetime-local"].input-text {
   text-align: center;
   width: max-content;
   max-width: 90vw;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+@media (prefers-color-scheme: dark) {
+  .toast-message {
+    background: rgba(255, 255, 255, 0.9);
+    color: #222222;
+  }
 }
 
 @keyframes fadeInOut {
