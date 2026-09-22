@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Plus, Check, Heart, Trash2, Calendar, X, Bell, RotateCcw } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import { Plus, Check, Heart, Trash2, Calendar, X, Bell, RotateCcw, ThumbsUp, Tag, Repeat } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import confetti from 'canvas-confetti'
 import { format } from 'date-fns'
@@ -25,13 +25,22 @@ const urlBase64ToUint8Array = (base64String) => {
   return outputArray;
 }
 
+const CATEGORY_EMOJIS = ['🛒', '🧹', '🍽️', '👶', '💼', '📅', '❤️', '🎸']
+
 export default function App() {
   const [todos, setTodos] = useState([])
+  const [postItMessage, setPostItMessage] = useState('')
+  const [isEditingPostIt, setIsEditingPostIt] = useState(false)
+  const postItInputRef = useRef(null)
+
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newTodo, setNewTodo] = useState('')
   const [assignee, setAssignee] = useState('both')
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedHour, setSelectedHour] = useState('6')
+  const [category, setCategory] = useState('')
+  const [recurrence, setRecurrence] = useState('none')
+  
   const [viewCompleted, setViewCompleted] = useState(false)
   const [viewDeleted, setViewDeleted] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -41,8 +50,9 @@ export default function App() {
 
   useEffect(() => {
     fetchTodos()
+    fetchPostIt()
 
-    const subscription = supabase
+    const todoSub = supabase
       .channel('todos')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'todos' }, payload => {
         if (payload.eventType === 'INSERT') {
@@ -54,17 +64,19 @@ export default function App() {
         }
       })
       .subscribe()
+      
+    const postItSub = supabase
+      .channel('post_it')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_it' }, payload => {
+        setPostItMessage(payload.new.message)
+      })
+      .subscribe()
 
     return () => {
-      supabase.removeChannel(subscription)
+      supabase.removeChannel(todoSub)
+      supabase.removeChannel(postItSub)
     }
   }, [])
-
-  const getInitialDate = () => {
-    const d = new Date();
-    const tzOffset = d.getTimezoneOffset() * 60000;
-    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 10);
-  }
 
   const fetchTodos = async () => {
     const { data, error } = await supabase
@@ -75,10 +87,30 @@ export default function App() {
     if (!error && data) setTodos(data)
   }
 
+  const fetchPostIt = async () => {
+    const { data } = await supabase.from('post_it').select('message').eq('id', 1).single();
+    if (data) setPostItMessage(data.message);
+  }
+
+  const savePostIt = async (e) => {
+    if (e.key === 'Enter' || e.type === 'blur') {
+      setIsEditingPostIt(false)
+      await supabase.from('post_it').update({ message: postItMessage }).eq('id', 1)
+    }
+  }
+
+  const getInitialDate = () => {
+    const d = new Date();
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 10);
+  }
+
   const openAddModal = () => {
     setEditingId(null)
     setNewTodo('')
     setAssignee('both')
+    setCategory('')
+    setRecurrence('none')
     setSelectedDate(getInitialDate())
     setSelectedHour('6')
     setIsModalOpen(true)
@@ -88,6 +120,8 @@ export default function App() {
     setEditingId(todo.id)
     setNewTodo(todo.text)
     setAssignee(todo.assignee)
+    setCategory(todo.category || '')
+    setRecurrence(todo.recurrence || 'none')
     
     if (todo.due_date) {
       const d = new Date(todo.due_date);
@@ -116,16 +150,16 @@ export default function App() {
 
     const todoData = { 
       text: newTodo, 
-      assignee, 
+      assignee,
+      category,
+      recurrence,
       due_date: isoDueDate
     }
 
     if (editingId) {
-      // Edit
       setTodos(prev => prev.map(t => t.id === editingId ? { ...t, ...todoData } : t))
       await supabase.from('todos').update(todoData).eq('id', editingId)
     } else {
-      // Add
       todoData.completed = false
       todoData.is_deleted = false
       await supabase.from('todos').insert([todoData])
@@ -134,8 +168,8 @@ export default function App() {
     setIsModalOpen(false)
   }
 
-  const toggleTodo = async (id, currentStatus) => {
-    const newStatus = !currentStatus
+  const toggleTodo = async (todo) => {
+    const newStatus = !todo.completed
     
     if (newStatus) {
       confetti({
@@ -146,8 +180,25 @@ export default function App() {
       })
     }
 
-    setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: newStatus } : t))
-    await supabase.from('todos').update({ completed: newStatus }).eq('id', id)
+    setTodos(prev => prev.map(t => t.id === todo.id ? { ...t, completed: newStatus } : t))
+    await supabase.from('todos').update({ completed: newStatus }).eq('id', todo.id)
+
+    if (newStatus && todo.recurrence && todo.recurrence !== 'none') {
+      const nextDate = new Date(todo.due_date || new Date());
+      if (todo.recurrence === 'daily') nextDate.setDate(nextDate.getDate() + 1);
+      if (todo.recurrence === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
+      
+      const newTodo = {
+        text: todo.text,
+        assignee: todo.assignee,
+        category: todo.category,
+        recurrence: todo.recurrence,
+        due_date: nextDate.toISOString(),
+        completed: false,
+        is_deleted: false
+      };
+      await supabase.from('todos').insert([newTodo]);
+    }
   }
 
   const softDeleteTodo = async (id) => {
@@ -198,25 +249,31 @@ export default function App() {
     }
   }
 
-  const handlePoke = async (taskText) => {
+  const handlePoke = async (taskText, isCompliment = false) => {
     const target = currentUser === '가은' ? '경민' : '가은';
     try {
       const res = await fetch('/api/poke', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender: currentUser, target: target, taskText })
+        body: JSON.stringify({ sender: currentUser, target, taskText, isCompliment })
       });
       if (res.ok) {
-        alert(`${target}님을 콕 찔렀어요! 👉`);
+        alert(isCompliment ? `${target}님을 칭찬했어요! 😍` : `${target}님을 콕 찔렀어요! 👉`);
       } else if (res.status === 404) {
         alert(`${target}님이 아직 앱에 접속하지 않아 알림을 받을 수 없습니다.`);
       } else {
-        alert('콕 찌르기에 실패했습니다.');
+        alert('알림 전송에 실패했습니다.');
       }
     } catch (e) {
       console.error(e);
       alert('에러가 발생했습니다.');
     }
+  }
+
+  const isOtherTask = (assignee) => {
+    if (currentUser === '가은' && assignee === 'you') return true;
+    if (currentUser === '경민' && assignee === 'me') return true;
+    return false;
   }
 
   if (!currentUser) {
@@ -236,9 +293,7 @@ export default function App() {
 
   const activeTodos = todos.filter(t => !t.is_deleted)
   const uncompletedTodos = activeTodos.filter(t => !t.completed).sort((a, b) => {
-    if (a.due_date && b.due_date) {
-      return new Date(a.due_date) - new Date(b.due_date);
-    }
+    if (a.due_date && b.due_date) return new Date(a.due_date) - new Date(b.due_date);
     if (a.due_date) return -1;
     if (b.due_date) return 1;
     return new Date(b.created_at) - new Date(a.created_at);
@@ -254,6 +309,25 @@ export default function App() {
         <div className="d-day-badge">{dday}</div>
       </header>
 
+      {/* Post-it Note */}
+      <div className="post-it" onClick={() => { setIsEditingPostIt(true); setTimeout(() => postItInputRef.current?.focus(), 100); }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '30px' }}>
+          {isEditingPostIt ? (
+            <input
+              ref={postItInputRef}
+              value={postItMessage}
+              onChange={e => setPostItMessage(e.target.value)}
+              onBlur={savePostIt}
+              onKeyDown={savePostIt}
+              className="post-it-input"
+              placeholder="오늘의 한 줄 편지를 남겨보세요❤️"
+            />
+          ) : (
+            <span>{postItMessage || "오늘의 한 줄 편지를 남겨보세요❤️"}</span>
+          )}
+        </div>
+      </div>
+
       {/* Uncompleted List */}
       <div className="todo-list glass-container" style={{ padding: '8px', flex: 'none' }}>
         {uncompletedTodos.length === 0 ? (
@@ -262,47 +336,57 @@ export default function App() {
             <p>모든 할 일을 마쳤어요!<br/>여유를 즐기세요 🎉</p>
           </div>
         ) : (
-          uncompletedTodos.map(todo => (
-            <div key={todo.id} className="todo-item compact" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button 
-                  className={`checkbox`}
-                  onClick={() => toggleTodo(todo.id, todo.completed)}
-                >
-                  <Check size={14} strokeWidth={3} />
-                </button>
-                <span 
-                  className="todo-text" 
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => openEditModal(todo)}
-                >
-                  {todo.text}
-                </span>
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0px', paddingLeft: '36px' }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span className={`assignee ${todo.assignee}`}>
-                    {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
+          uncompletedTodos.map(todo => {
+            const dimmed = isOtherTask(todo.assignee);
+            return (
+              <div key={todo.id} className={`todo-item compact ${dimmed ? 'dimmed-task' : ''}`} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button 
+                    className={`checkbox`}
+                    onClick={() => toggleTodo(todo)}
+                  >
+                    <Check size={14} strokeWidth={3} />
+                  </button>
+                  <span 
+                    className="todo-text" 
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => openEditModal(todo)}
+                  >
+                    {todo.category && <span style={{ marginRight: '6px' }}>{todo.category}</span>}
+                    {todo.text}
                   </span>
-                  {todo.due_date && (
-                    <span className="todo-date">
-                      <Calendar size={10} />
-                      {format(new Date(todo.due_date), 'MM/dd a h시', { locale: ko })}
-                    </span>
-                  )}
                 </div>
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  <button className="delete-btn" onClick={() => handlePoke(todo.text)} title="상대방 콕 찌르기">
-                    <Bell size={16} />
-                  </button>
-                  <button className="delete-btn" onClick={() => softDeleteTodo(todo.id)} title="삭제">
-                    <Trash2 size={16} />
-                  </button>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0px', paddingLeft: '36px' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span className={`assignee ${todo.assignee}`}>
+                      {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
+                    </span>
+                    {todo.due_date && (
+                      <span className="todo-date">
+                        <Calendar size={10} />
+                        {format(new Date(todo.due_date), 'MM/dd a h시', { locale: ko })}
+                      </span>
+                    )}
+                    {todo.recurrence && todo.recurrence !== 'none' && (
+                      <span className="todo-date" style={{ color: '#4ecdc4', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <Repeat size={10} />
+                        {todo.recurrence === 'daily' ? '매일' : '매주'}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button className="delete-btn" onClick={() => handlePoke(todo.text)} title="상대방 콕 찌르기">
+                      <Bell size={16} />
+                    </button>
+                    <button className="delete-btn" onClick={() => softDeleteTodo(todo.id)} title="삭제">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            )
+          })
         )}
       </div>
 
@@ -323,7 +407,7 @@ export default function App() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button 
                       className="checkbox checked"
-                      onClick={() => toggleTodo(todo.id, todo.completed)}
+                      onClick={() => toggleTodo(todo)}
                     >
                       <Check size={14} strokeWidth={3} />
                     </button>
@@ -332,6 +416,7 @@ export default function App() {
                       style={{ cursor: 'pointer' }}
                       onClick={() => openEditModal(todo)}
                     >
+                      {todo.category && <span style={{ marginRight: '6px' }}>{todo.category}</span>}
                       {todo.text}
                     </span>
                   </div>
@@ -349,6 +434,9 @@ export default function App() {
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: '4px' }}>
+                      <button className="delete-btn" style={{ color: '#ff6b6b', opacity: 1 }} onClick={() => handlePoke(todo.text, true)} title="칭찬하기">
+                        <ThumbsUp size={16} />
+                      </button>
                       <button className="delete-btn" onClick={() => softDeleteTodo(todo.id)}>
                         <Trash2 size={16} />
                       </button>
@@ -377,7 +465,10 @@ export default function App() {
               {deletedTodos.map(todo => (
                 <div key={todo.id} className="todo-item compact completed" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0px', opacity: 0.5 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span className="todo-text">{todo.text}</span>
+                    <span className="todo-text">
+                      {todo.category && <span style={{ marginRight: '6px' }}>{todo.category}</span>}
+                      {todo.text}
+                    </span>
                   </div>
                   
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
@@ -428,6 +519,59 @@ export default function App() {
                 autoFocus={isModalOpen}
               />
             </div>
+            
+            <div className="form-group">
+              <label><Tag size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }}/>카테고리 (선택)</label>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
+                <button
+                  type="button"
+                  className={`segment-btn ${category === '' ? 'active' : ''}`}
+                  onClick={() => setCategory('')}
+                  style={{ minWidth: '40px', padding: '8px 4px' }}
+                >
+                  없음
+                </button>
+                {CATEGORY_EMOJIS.map(emoji => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    className={`segment-btn ${category === emoji ? 'active' : ''}`}
+                    onClick={() => setCategory(emoji)}
+                    style={{ minWidth: '40px', padding: '8px 4px', fontSize: '18px' }}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label><Repeat size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }}/>반복 설정</label>
+              <div className="segmented-control">
+                <button
+                  type="button"
+                  className={`segment-btn ${recurrence === 'none' ? 'active' : ''}`}
+                  onClick={() => setRecurrence('none')}
+                >
+                  반복 안함
+                </button>
+                <button
+                  type="button"
+                  className={`segment-btn ${recurrence === 'daily' ? 'active' : ''}`}
+                  onClick={() => setRecurrence('daily')}
+                >
+                  매일 반복
+                </button>
+                <button
+                  type="button"
+                  className={`segment-btn ${recurrence === 'weekly' ? 'active' : ''}`}
+                  onClick={() => setRecurrence('weekly')}
+                >
+                  매주 반복
+                </button>
+              </div>
+            </div>
+
             <div className="form-group">
               <label>기한 설정 (선택)</label>
               <div style={{ display: 'flex', gap: '8px' }}>
