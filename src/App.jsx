@@ -45,6 +45,12 @@ export default function App() {
   const [viewDeleted, setViewDeleted] = useState(false)
   const [editingId, setEditingId] = useState(null)
   
+  const [toast, setToast] = useState(null)
+  const showToast = (msg) => {
+    setToast(msg)
+    setTimeout(() => setToast(null), 3000)
+  }
+  
   // Profile
   const [currentUser, setCurrentUser] = useState(localStorage.getItem('currentUser') || null)
 
@@ -252,7 +258,7 @@ export default function App() {
 
   const enableNotifications = async () => {
     if (!('serviceWorker' in navigator && 'PushManager' in window)) {
-      alert('이 브라우저에서는 알림을 지원하지 않습니다.\n아이폰인 경우 반드시 "홈 화면에 추가"를 통해 앱을 설치하고 열어주세요!');
+      showToast('이 브라우저에서는 알림을 지원하지 않습니다.\n아이폰인 경우 반드시 "홈 화면에 추가"를 통해 앱을 설치하고 열어주세요!');
       return;
     }
     const permission = await Notification.requestPermission();
@@ -276,13 +282,13 @@ export default function App() {
           }
         }, { onConflict: 'endpoint' });
         
-        alert('알림 설정이 정상적으로 완료되었습니다! 🎉\n이제 서로 콕 찌르기를 할 수 있어요!');
+        showToast('알림 설정이 정상적으로 완료되었습니다! 🎉\n이제 서로 부탁하기를 할 수 있어요!');
       } catch (err) {
         console.error("Failed to subscribe to push", err);
-        alert('알림 설정 중 오류가 발생했습니다.');
+        showToast('알림 설정 중 오류가 발생했습니다.');
       }
     } else {
-      alert('알림 권한을 허용해주셔야 푸시를 받을 수 있습니다.');
+      showToast('알림 권한을 허용해주셔야 푸시를 받을 수 있습니다.');
     }
   }
 
@@ -295,15 +301,15 @@ export default function App() {
         body: JSON.stringify({ sender: currentUser, target, taskText, isCompliment })
       });
       if (res.ok) {
-        alert(isCompliment ? `${target}님을 칭찬했어요! 😍` : `${target}님을 콕 찔렀어요! 👉`);
+        showToast(isCompliment ? `${target}님을 칭찬했어요! 😍` : `${target}님에게 부탁 알림을 보냈어요! 🙏`);
       } else if (res.status === 404) {
-        alert(`${target}님이 아직 앱에 접속하지 않아 알림을 받을 수 없습니다.`);
+        showToast(`${target}님이 아직 앱에 접속하지 않아 알림을 받을 수 없습니다.`);
       } else {
-        alert('알림 전송에 실패했습니다.');
+        showToast('알림 전송에 실패했습니다.');
       }
     } catch (e) {
       console.error(e);
-      alert('에러가 발생했습니다.');
+      showToast('에러가 발생했습니다.');
     }
   }
 
@@ -421,7 +427,7 @@ export default function App() {
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: '4px' }}>
-                    <button className="delete-btn" onClick={() => handlePoke(todo.text)} title="상대방 콕 찌르기">
+                    <button className="delete-btn" onClick={() => handlePoke(todo.text)} title="상대방에게 부탁하기">
                       <Bell size={16} />
                     </button>
                     <button className="delete-btn" onClick={() => softDeleteTodo(todo.id)} title="삭제">
@@ -677,6 +683,13 @@ export default function App() {
           </form>
         </div>
       </div>
+      {/* Toast Notification */}
+      {toast && (
+        <div className="toast-message">
+          {toast}
+        </div>
+      )}
+
     </div>
   )
 }

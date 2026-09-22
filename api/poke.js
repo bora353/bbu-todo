@@ -35,10 +35,10 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Target has no push subscriptions' });
     }
 
-    let title = '👉 콕 찌르기!';
+    let title = '💌 부탁이 도착했어요!';
     let body = taskText 
-      ? `${sender}님이 '${taskText}' 할 일을 콕 찔렀어요!`
-      : `${sender}님이 콕 찔렀어요! 할 일을 확인해볼까요?`;
+      ? `${sender}님이 '${taskText}' 할 일을 예쁘게 부탁했어요! 🙏`
+      : `${sender}님이 할 일을 부탁하고 싶어 해요! ✨`;
 
     if (isCompliment) {
       title = '😍 쓰담쓰담!';
