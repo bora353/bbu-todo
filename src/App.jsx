@@ -611,6 +611,33 @@ export default function App() {
             </div>
 
             <div className="form-group">
+              <label>담당자</label>
+              <div className="segmented-control">
+                <button
+                  type="button"
+                  className={`segment-btn ${assignee === 'both' ? 'active' : ''}`}
+                  onClick={() => setAssignee('both')}
+                >
+                  쀼
+                </button>
+                <button
+                  type="button"
+                  className={`segment-btn ${assignee === 'me' ? 'active' : ''}`}
+                  onClick={() => setAssignee('me')}
+                >
+                  가은
+                </button>
+                <button
+                  type="button"
+                  className={`segment-btn ${assignee === 'you' ? 'active' : ''}`}
+                  onClick={() => setAssignee('you')}
+                >
+                  경민
+                </button>
+              </div>
+            </div>
+
+            <div className="form-group">
               <label><Repeat size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }}/>반복 설정</label>
               <div className="segmented-control">
                 <button
@@ -662,33 +689,7 @@ export default function App() {
                 </select>
               </div>
             </div>
-            
-            <div className="form-group">
-              <label>담당자</label>
-              <div className="segmented-control">
-                <button
-                  type="button"
-                  className={`segment-btn ${assignee === 'both' ? 'active' : ''}`}
-                  onClick={() => setAssignee('both')}
-                >
-                  쀼
-                </button>
-                <button
-                  type="button"
-                  className={`segment-btn ${assignee === 'me' ? 'active' : ''}`}
-                  onClick={() => setAssignee('me')}
-                >
-                  가은
-                </button>
-                <button
-                  type="button"
-                  className={`segment-btn ${assignee === 'you' ? 'active' : ''}`}
-                  onClick={() => setAssignee('you')}
-                >
-                  경민
-                </button>
-              </div>
-            </div>
+
 
             <button type="submit" className="submit-btn" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               {editingId ? '수정' : '추가'}
