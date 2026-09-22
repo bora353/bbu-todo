@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Check, Heart, Trash2, Calendar, X, Bell, RotateCcw } from 'lucide-react'
+import { Plus, Check, Heart, Trash2, Clock, X, Bell, RotateCcw } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import confetti from 'canvas-confetti'
 import { format } from 'date-fns'
@@ -60,10 +60,7 @@ export default function App() {
   }, [])
 
   const getInitialDueDate = () => {
-    const d = new Date();
-    d.setHours(6, 30, 0, 0);
-    const tzOffset = d.getTimezoneOffset() * 60000;
-    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+    return '06:30';
   }
 
   const handleDateChange = (e) => {
@@ -72,14 +69,16 @@ export default function App() {
       setDueDate('');
       return;
     }
-    const d = new Date(val);
-    const m = d.getMinutes();
-    const roundedM = Math.round(m / 5) * 5;
-    d.setMinutes(roundedM);
-    
-    const tzOffset = d.getTimezoneOffset() * 60000;
-    const snappedVal = new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
-    setDueDate(snappedVal);
+    const [h, m] = val.split(':').map(Number);
+    let roundedM = Math.round(m / 5) * 5;
+    let finalH = h;
+    if (roundedM === 60) {
+      finalH = (finalH + 1) % 24;
+      roundedM = 0;
+    }
+    const formattedH = String(finalH).padStart(2, '0');
+    const formattedM = String(roundedM).padStart(2, '0');
+    setDueDate(`${formattedH}:${formattedM}`);
   }
 
   const fetchTodos = async () => {
@@ -103,7 +102,13 @@ export default function App() {
     setEditingId(todo.id)
     setNewTodo(todo.text)
     setAssignee(todo.assignee)
-    setDueDate(todo.due_date ? new Date(todo.due_date).toISOString().slice(0, 16) : '')
+    
+    let timeOnly = '';
+    if (todo.due_date) {
+      const d = new Date(todo.due_date);
+      timeOnly = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+    setDueDate(timeOnly)
     setIsModalOpen(true)
   }
 
@@ -111,10 +116,18 @@ export default function App() {
     e.preventDefault()
     if (!newTodo.trim()) return
 
+    let isoDueDate = null;
+    if (dueDate) {
+      const [h, m] = dueDate.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      isoDueDate = d.toISOString();
+    }
+
     const todoData = { 
       text: newTodo, 
       assignee, 
-      due_date: dueDate ? new Date(dueDate).toISOString() : null
+      due_date: isoDueDate
     }
 
     if (editingId) {
@@ -282,10 +295,10 @@ export default function App() {
                   <span className={`assignee ${todo.assignee}`}>
                     {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
                   </span>
-                  {(todo.due_date || todo.created_at) && (
+                  {todo.due_date && (
                     <span className="todo-date">
-                      <Calendar size={10} />
-                      {format(new Date(todo.due_date || todo.created_at), 'MM/dd HH:mm', { locale: ko })}
+                      <Clock size={10} />
+                      {format(new Date(todo.due_date), 'a h:mm', { locale: ko })}
                     </span>
                   )}
                 </div>
@@ -338,10 +351,10 @@ export default function App() {
                       <span className={`assignee ${todo.assignee}`}>
                         {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
                       </span>
-                      {(todo.due_date || todo.created_at) && (
+                      {todo.due_date && (
                         <span className="todo-date">
-                          <Calendar size={10} />
-                          {format(new Date(todo.due_date || todo.created_at), 'MM/dd HH:mm', { locale: ko })}
+                          <Clock size={10} />
+                          {format(new Date(todo.due_date), 'a h:mm', { locale: ko })}
                         </span>
                       )}
                     </div>
@@ -426,9 +439,9 @@ export default function App() {
               />
             </div>
             <div className="form-group">
-              <label>기한 설정</label>
+              <label>시간 설정</label>
               <input
-                type="datetime-local"
+                type="time"
                 className="input-text"
                 step="300"
                 value={dueDate}
