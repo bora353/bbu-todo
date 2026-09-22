@@ -250,6 +250,42 @@ export default function App() {
     }
   }
 
+  const enableNotifications = async () => {
+    if (!('serviceWorker' in navigator && 'PushManager' in window)) {
+      alert('이 브라우저에서는 알림을 지원하지 않습니다.\n아이폰인 경우 반드시 "홈 화면에 추가"를 통해 앱을 설치하고 열어주세요!');
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      const registration = await navigator.serviceWorker.ready;
+      const vapidPublicKey = "BLCbyjtnBK8rB7Md_aEtONwHdugGwwKQRKILzCOB5h-QXFZTEf4SshBrnFfn-BAJFnzLDeL52j3tl5jRx2h_AJk";
+      const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+      
+      try {
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey
+        });
+        
+        await supabase.from('subscriptions').upsert({
+          user_name: currentUser,
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))),
+            auth: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))))
+          }
+        }, { onConflict: 'endpoint' });
+        
+        alert('알림 설정이 정상적으로 완료되었습니다! 🎉\n이제 서로 콕 찌르기를 할 수 있어요!');
+      } catch (err) {
+        console.error("Failed to subscribe to push", err);
+        alert('알림 설정 중 오류가 발생했습니다.');
+      }
+    } else {
+      alert('알림 권한을 허용해주셔야 푸시를 받을 수 있습니다.');
+    }
+  }
+
   const handlePoke = async (taskText, isCompliment = false) => {
     const target = currentUser === '가은' ? '경민' : '가은';
     try {
@@ -306,8 +342,16 @@ export default function App() {
 
   return (
     <div className="app-wrapper" style={{ paddingBottom: '100px' }}>
-      <header className="header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <header className="header" style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div className="d-day-badge">{dday}</div>
+        <button 
+          className="delete-btn" 
+          style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', padding: '8px', color: '#ff6b6b' }}
+          onClick={enableNotifications} 
+          title="알림 권한 다시 켜기"
+        >
+          <Bell size={18} />
+        </button>
       </header>
 
       {/* Post-it Note */}
