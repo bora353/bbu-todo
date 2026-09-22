@@ -434,8 +434,8 @@ export default function App() {
             </div>
 
             <button type="submit" className="submit-btn" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {editingId ? '수정' : '추가'}
               <Heart fill="#ffb6c1" color="#ffb6c1" size={20} />
-              {editingId ? '수정 완료' : '추가하기'}
             </button>
           </form>
         </div>
