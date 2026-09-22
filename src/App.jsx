@@ -10,7 +10,7 @@ const ANNIVERSARY_DATE = new Date('2025-05-01')
 const getDDay = () => {
   const diffTime = Math.abs(new Date() - ANNIVERSARY_DATE)
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  return `👶 태어난 지 D+${diffDays}일`
+  return `👶 또잉 D+${diffDays}일`
 }
 
 // Helper to handle push subscription
