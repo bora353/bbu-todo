@@ -25,7 +25,7 @@ const urlBase64ToUint8Array = (base64String) => {
   return outputArray;
 }
 
-const CATEGORY_EMOJIS = ['🛒', '🧹', '🍽️', '👶', '💼', '📅', '❤️', '🎸']
+const CATEGORY_EMOJIS = ['👶', '📅', '🛒', '🍽️', '❤️']
 
 export default function App() {
   const [todos, setTodos] = useState([])
