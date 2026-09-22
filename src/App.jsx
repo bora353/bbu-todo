@@ -99,7 +99,7 @@ export default function App() {
   }
 
   const savePostIt = async (e) => {
-    if (e.key === 'Enter' || e.type === 'blur') {
+    if (e.type === 'blur') {
       setIsEditingPostIt(false)
       await supabase.from('post_it').update({ message: postItMessage }).eq('id', 1)
     }
@@ -364,17 +364,18 @@ export default function App() {
       <div className="post-it" onClick={() => { setIsEditingPostIt(true); setTimeout(() => postItInputRef.current?.focus(), 100); }}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '30px' }}>
           {isEditingPostIt ? (
-            <input
+            <textarea
               ref={postItInputRef}
               value={postItMessage}
               onChange={e => setPostItMessage(e.target.value)}
               onBlur={savePostIt}
-              onKeyDown={savePostIt}
               className="post-it-input"
               placeholder="오늘의 한 줄 편지를 남겨보세요❤️"
+              rows={Math.max(2, postItMessage.split('\n').length)}
+              style={{ resize: 'none', lineHeight: '1.4' }}
             />
           ) : (
-            <span>{postItMessage || "오늘의 한 줄 편지를 남겨보세요❤️"}</span>
+            <span style={{ whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{postItMessage || "오늘의 한 줄 편지를 남겨보세요❤️"}</span>
           )}
         </div>
       </div>
