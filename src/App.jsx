@@ -414,7 +414,10 @@ export default function App() {
                       {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
                     </span>
                     {todo.due_date && (
-                      <span className="todo-date">
+                      <span 
+                        className="todo-date"
+                        style={new Date(todo.due_date) - new Date() < 24 * 60 * 60 * 1000 ? { color: '#ff4d85', fontWeight: 600 } : {}}
+                      >
                         <Calendar size={10} />
                         {format(new Date(todo.due_date), 'MM/dd a h시', { locale: ko })}
                       </span>
