@@ -216,7 +216,14 @@ export default function App() {
   }
 
   const activeTodos = todos.filter(t => !t.is_deleted)
-  const uncompletedTodos = activeTodos.filter(t => !t.completed)
+  const uncompletedTodos = activeTodos.filter(t => !t.completed).sort((a, b) => {
+    if (a.due_date && b.due_date) {
+      return new Date(a.due_date) - new Date(b.due_date);
+    }
+    if (a.due_date) return -1;
+    if (b.due_date) return 1;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
   const completedTodos = activeTodos.filter(t => t.completed)
   const deletedTodos = todos.filter(t => t.is_deleted)
   
