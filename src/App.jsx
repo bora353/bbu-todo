@@ -232,8 +232,7 @@ export default function App() {
   return (
     <div className="app-wrapper" style={{ paddingBottom: '100px' }}>
       <header className="header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div className="d-day-badge" style={{ marginBottom: '12px' }}>{dday}</div>
-        <h1 style={{ fontSize: '28px', margin: 0, width: '100%' }}>우리는 쀼</h1>
+        <div className="d-day-badge">{dday}</div>
       </header>
 
       {/* Uncompleted List */}

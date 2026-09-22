@@ -109,7 +109,7 @@ button:active {
 .todo-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
 }
 
