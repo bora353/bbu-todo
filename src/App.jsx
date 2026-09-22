@@ -66,6 +66,22 @@ export default function App() {
     return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
   }
 
+  const handleDateChange = (e) => {
+    const val = e.target.value;
+    if (!val) {
+      setDueDate('');
+      return;
+    }
+    const d = new Date(val);
+    const m = d.getMinutes();
+    const roundedM = Math.round(m / 10) * 10;
+    d.setMinutes(roundedM);
+    
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    const snappedVal = new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+    setDueDate(snappedVal);
+  }
+
   const fetchTodos = async () => {
     const { data, error } = await supabase
       .from('todos')
@@ -416,7 +432,7 @@ export default function App() {
                 className="input-text"
                 step="600"
                 value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                onChange={handleDateChange}
               />
             </div>
             
