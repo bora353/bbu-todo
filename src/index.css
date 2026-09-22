@@ -430,34 +430,36 @@ input[type="datetime-local"].input-text {
 
 /* Post-it */
 .post-it {
-  background: #ffeb3b;
-  color: #333;
+  background: #fef9e7; /* 연하고 따뜻한 크림 노란색 */
+  color: #4a4a4a;
   padding: 12px 16px;
-  border-radius: 4px;
-  box-shadow: 2px 4px 10px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  border: 2px dashed #f4d03f; /* 귀여운 노란색 점선 테두리 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
   transform: rotate(-1deg);
   font-weight: 500;
   margin-bottom: 8px;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
 }
 .post-it:hover {
   transform: rotate(0deg) scale(1.02);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
 }
 .post-it-input {
   background: transparent;
   border: none;
-  border-bottom: 1px dashed rgba(0,0,0,0.2);
-  color: #333;
+  color: #4a4a4a;
   width: 100%;
   text-align: center;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   padding: 4px;
 }
 .post-it-input:focus {
   outline: none;
-  border-bottom: 1px dashed rgba(0,0,0,0.5);
+  background: rgba(255,255,255,0.4);
+  border-radius: 8px;
 }
 
 /* Dimmed Task (Other Person's Task) */
