@@ -42,7 +42,9 @@ export default async function handler(req, res) {
 
     if (isCompliment) {
       title = '😍 쓰담쓰담!';
-      body = `${sender}님이 ${target}님을 칭찬했어요! 😍`;
+      body = taskText
+        ? `우와! ${sender}님이 '${taskText}' 해낸 걸 폭풍 칭찬해요! 👍`
+        : `우와! ${sender}님이 폭풍 칭찬을 보냈어요! 👍`;
     }
 
     const payload = JSON.stringify({ title, body });
