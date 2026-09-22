@@ -205,12 +205,12 @@ button:active {
 }
 .assignee.both { background: #fff9c4; color: #f57f17; } /* 쀼 - 연한 노란색 */
 .assignee.me { background: #f3e8ff; color: #6b21a8; } /* 가은 - 연한 보라색 */
-.assignee.you { background: #e0e7ff; color: #3730a3; } /* 경민 - 연한 남색 */
+.assignee.you { background: #e0f2fe; color: #0284c7; } /* 경민 - 연한 하늘색 */
 
 @media (prefers-color-scheme: dark) {
   .assignee.both { background: #f57f17; color: #fff9c4; }
   .assignee.me { background: #6b21a8; color: #f3e8ff; }
-  .assignee.you { background: #3730a3; color: #e0e7ff; }
+  .assignee.you { background: #0284c7; color: #e0f2fe; }
 }
 
 /* Add Todo Floating Button */
@@ -322,6 +322,11 @@ button:active {
   box-sizing: border-box;
   color: var(--text-main);
   transition: all 0.2s ease;
+}
+
+input[type="datetime-local"].input-text {
+  display: block;
+  max-width: 100%;
 }
 
 @media (prefers-color-scheme: dark) {

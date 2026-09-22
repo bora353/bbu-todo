@@ -59,6 +59,13 @@ export default function App() {
     }
   }, [])
 
+  const getInitialDueDate = () => {
+    const d = new Date();
+    d.setHours(6, 30, 0, 0);
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+  }
+
   const fetchTodos = async () => {
     const { data, error } = await supabase
       .from('todos')
@@ -72,7 +79,7 @@ export default function App() {
     setEditingId(null)
     setNewTodo('')
     setAssignee('both')
-    setDueDate('')
+    setDueDate(getInitialDueDate())
     setIsModalOpen(true)
   }
 
@@ -248,7 +255,7 @@ export default function App() {
                 </span>
               </div>
               
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', paddingLeft: '36px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0px', paddingLeft: '36px' }}>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <span className={`assignee ${todo.assignee}`}>
                     {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
@@ -304,7 +311,7 @@ export default function App() {
                     </span>
                   </div>
                   
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', paddingLeft: '36px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0px', paddingLeft: '36px' }}>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <span className={`assignee ${todo.assignee}`}>
                         {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
@@ -401,6 +408,7 @@ export default function App() {
               <input
                 type="datetime-local"
                 className="input-text"
+                step="600"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
               />
