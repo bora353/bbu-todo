@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Check, Heart, Trash2, Clock, X, Bell, RotateCcw } from 'lucide-react'
+import { Plus, Check, Heart, Trash2, Calendar, X, Bell, RotateCcw } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import confetti from 'canvas-confetti'
 import { format } from 'date-fns'
@@ -30,7 +30,8 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newTodo, setNewTodo] = useState('')
   const [assignee, setAssignee] = useState('both')
-  const [dueDate, setDueDate] = useState('')
+  const [selectedDate, setSelectedDate] = useState('')
+  const [selectedHour, setSelectedHour] = useState('6')
   const [viewCompleted, setViewCompleted] = useState(false)
   const [viewDeleted, setViewDeleted] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -59,26 +60,10 @@ export default function App() {
     }
   }, [])
 
-  const getInitialDueDate = () => {
-    return '06:30';
-  }
-
-  const handleDateChange = (e) => {
-    const val = e.target.value;
-    if (!val) {
-      setDueDate('');
-      return;
-    }
-    const [h, m] = val.split(':').map(Number);
-    let roundedM = Math.round(m / 5) * 5;
-    let finalH = h;
-    if (roundedM === 60) {
-      finalH = (finalH + 1) % 24;
-      roundedM = 0;
-    }
-    const formattedH = String(finalH).padStart(2, '0');
-    const formattedM = String(roundedM).padStart(2, '0');
-    setDueDate(`${formattedH}:${formattedM}`);
+  const getInitialDate = () => {
+    const d = new Date();
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 10);
   }
 
   const fetchTodos = async () => {
@@ -94,7 +79,8 @@ export default function App() {
     setEditingId(null)
     setNewTodo('')
     setAssignee('both')
-    setDueDate(getInitialDueDate())
+    setSelectedDate(getInitialDate())
+    setSelectedHour('6')
     setIsModalOpen(true)
   }
 
@@ -103,12 +89,15 @@ export default function App() {
     setNewTodo(todo.text)
     setAssignee(todo.assignee)
     
-    let timeOnly = '';
     if (todo.due_date) {
       const d = new Date(todo.due_date);
-      timeOnly = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      const tzOffset = d.getTimezoneOffset() * 60000;
+      setSelectedDate(new Date(d.getTime() - tzOffset).toISOString().slice(0, 10));
+      setSelectedHour(d.getHours().toString());
+    } else {
+      setSelectedDate('');
+      setSelectedHour('6');
     }
-    setDueDate(timeOnly)
     setIsModalOpen(true)
   }
 
@@ -117,10 +106,11 @@ export default function App() {
     if (!newTodo.trim()) return
 
     let isoDueDate = null;
-    if (dueDate) {
-      const [h, m] = dueDate.split(':').map(Number);
+    if (selectedDate) {
+      const [y, m, day] = selectedDate.split('-').map(Number);
       const d = new Date();
-      d.setHours(h, m, 0, 0);
+      d.setFullYear(y, m - 1, day);
+      d.setHours(Number(selectedHour), 0, 0, 0);
       isoDueDate = d.toISOString();
     }
 
@@ -297,8 +287,8 @@ export default function App() {
                   </span>
                   {todo.due_date && (
                     <span className="todo-date">
-                      <Clock size={10} />
-                      {format(new Date(todo.due_date), 'a h:mm', { locale: ko })}
+                      <Calendar size={10} />
+                      {format(new Date(todo.due_date), 'MM/dd a h시', { locale: ko })}
                     </span>
                   )}
                 </div>
@@ -353,8 +343,8 @@ export default function App() {
                       </span>
                       {todo.due_date && (
                         <span className="todo-date">
-                          <Clock size={10} />
-                          {format(new Date(todo.due_date), 'a h:mm', { locale: ko })}
+                          <Calendar size={10} />
+                          {format(new Date(todo.due_date), 'MM/dd a h시', { locale: ko })}
                         </span>
                       )}
                     </div>
@@ -439,14 +429,29 @@ export default function App() {
               />
             </div>
             <div className="form-group">
-              <label>시간 설정</label>
-              <input
-                type="time"
-                className="input-text"
-                step="300"
-                value={dueDate}
-                onChange={handleDateChange}
-              />
+              <label>기한 설정 (선택)</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="date" 
+                  className="input-text" 
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  style={{ flex: 2 }}
+                />
+                <select 
+                  className="input-text" 
+                  value={selectedHour}
+                  onChange={(e) => setSelectedHour(e.target.value)}
+                  disabled={!selectedDate}
+                  style={{ flex: 1, padding: '0 8px', textAlign: 'center' }}
+                >
+                  {[...Array(24)].map((_, i) => (
+                    <option key={i} value={i}>
+                      {i === 0 ? '오전 12시' : i < 12 ? `오전 ${i}시` : i === 12 ? '오후 12시' : `오후 ${i - 12}시`}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             
             <div className="form-group">
