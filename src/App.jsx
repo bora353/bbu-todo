@@ -45,8 +45,6 @@ export default function App() {
   const [viewDeleted, setViewDeleted] = useState(false)
   const [editingId, setEditingId] = useState(null)
   
-  const [quickAddText, setQuickAddText] = useState('')
-  
   const [toast, setToast] = useState(null)
   const showToast = (msg) => {
     setToast(msg)
@@ -141,25 +139,6 @@ export default function App() {
       setSelectedHour('6');
     }
     setIsModalOpen(true)
-  }
-
-  const handleQuickAdd = async (e) => {
-    if (e && e.preventDefault) e.preventDefault()
-    if (!quickAddText.trim()) return
-
-    const todoData = { 
-      text: quickAddText, 
-      assignee: 'both',
-      category: '',
-      recurrence: 'none',
-      due_date: null
-    }
-
-    const { data, error } = await supabase.from('todos').insert([todoData]).select()
-    if (!error && data) {
-      setTodos([data[0], ...todos])
-      setQuickAddText('')
-    }
   }
 
   const saveTodo = async (e) => {
@@ -571,18 +550,10 @@ export default function App() {
         </div>
       )}
 
-      {/* Quick Add Bar */}
-      <form className="quick-add-bar" onSubmit={handleQuickAdd}>
-        <input 
-          type="text" 
-          placeholder="새로운 할 일을 입력하세요..." 
-          value={quickAddText}
-          onChange={(e) => setQuickAddText(e.target.value)}
-        />
-        <button type="submit" disabled={!quickAddText.trim()}>
-          <Send size={18} />
-        </button>
-      </form>
+      {/* FAB Add Button */}
+      <button className="fab" onClick={openAddModal}>
+        <Heart fill="#ffb6c1" color="#ffb6c1" size={24} />
+      </button>
 
       {/* Modal */}
       <div 
@@ -594,10 +565,15 @@ export default function App() {
         }}
       >
         <div className="modal-content">
-          <div className="modal-header">
-            <h2 className="modal-title">{editingId ? '할 일 수정' : '아자아자!'}</h2>
-            <button className="close-btn" onClick={() => setIsModalOpen(false)}>
-              <X size={20} />
+          <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button type="button" className="text-btn" onClick={() => setIsModalOpen(false)} style={{ color: '#888', background: 'none', border: 'none', fontSize: '15px' }}>
+              취소
+            </button>
+            <h2 className="modal-title" style={{ margin: 0, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+              {editingId ? '할 일 수정' : '아자아자!'}
+            </h2>
+            <button type="button" className="text-btn" onClick={saveTodo} style={{ color: '#ff4d85', background: 'none', border: 'none', fontSize: '15px', fontWeight: 600 }}>
+              저장
             </button>
           </div>
           
