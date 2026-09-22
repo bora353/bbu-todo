@@ -562,13 +562,14 @@ export default function App() {
           
           <form onSubmit={saveTodo}>
             <div className="form-group">
-              <input
-                type="text"
+              <textarea
                 className="input-text"
                 placeholder="무엇을 함께 할까요?"
                 value={newTodo}
                 onChange={(e) => setNewTodo(e.target.value)}
                 autoFocus={isModalOpen}
+                rows={Math.max(2, newTodo.split('\n').length)}
+                style={{ resize: 'none', lineHeight: '1.4' }}
               />
             </div>
             

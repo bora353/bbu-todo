@@ -144,6 +144,8 @@ button:active {
   font-weight: 500;
   flex: 1;
   min-width: 120px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .todo-date {
