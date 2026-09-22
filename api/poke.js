@@ -8,7 +8,7 @@ const supabase = createClient(
 
 webPush.setVapidDetails(
   'mailto:test@example.com',
-  process.env.VITE_VAPID_PUBLIC_KEY,
+  "BLCbyjtnBK8rB7Md_aEtONwHdugGwwKQRKILzCOB5h-QXFZTEf4SshBrnFfn-BAJFnzLDeL52j3tl5jRx2h_AJk",
   process.env.VAPID_PRIVATE_KEY
 );
 

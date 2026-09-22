@@ -123,7 +123,7 @@ export default function App() {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         const registration = await navigator.serviceWorker.ready;
-        const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        const vapidPublicKey = "BLCbyjtnBK8rB7Md_aEtONwHdugGwwKQRKILzCOB5h-QXFZTEf4SshBrnFfn-BAJFnzLDeL52j3tl5jRx2h_AJk";
         const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
         
         try {
