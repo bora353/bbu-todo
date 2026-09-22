@@ -432,36 +432,43 @@ input[type="datetime-local"].input-text {
 
 /* Post-it */
 .post-it {
-  background: #fef9e7; /* 연하고 따뜻한 크림 노란색 */
-  color: #4a4a4a;
+  background: #fffef2; /* 아주 은은한 아이보리/레몬빛 */
+  color: #5c4b51;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 2px dashed #f4d03f; /* 귀여운 노란색 점선 테두리 */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  transform: rotate(-1deg);
-  font-weight: 500;
+  border: 1px dashed #e5c07b; /* 얇고 예쁜 금빛 점선 테두리 */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  font-weight: 600;
   margin-bottom: 8px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s;
   cursor: pointer;
+  position: relative;
+}
+@media (prefers-color-scheme: dark) {
+  .post-it {
+    background: rgba(255, 245, 200, 0.1);
+    border: 1px dashed rgba(255, 235, 150, 0.3);
+    color: #fce883;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 .post-it:hover {
-  transform: rotate(0deg) scale(1.02);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 .post-it-input {
   background: transparent;
   border: none;
-  color: #4a4a4a;
+  color: inherit;
   width: 100%;
   text-align: center;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   padding: 4px;
 }
 .post-it-input:focus {
   outline: none;
-  background: rgba(255,255,255,0.4);
-  border-radius: 8px;
 }
 
 /* Dimmed Task (Other Person's Task) */
