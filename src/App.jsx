@@ -193,7 +193,7 @@ export default function App() {
     <div className="app-wrapper">
       <header className="header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div className="d-day-badge" style={{ marginBottom: '12px' }}>{dday}</div>
-        <h1 style={{ fontSize: '28px', margin: 0, width: '100%' }}>우리는 쀼💕</h1>
+        <h1 style={{ fontSize: '28px', margin: 0, width: '100%' }}>우리는 쀼</h1>
       </header>
 
       {/* Uncompleted List */}
@@ -205,33 +205,37 @@ export default function App() {
           </div>
         ) : (
           uncompletedTodos.map(todo => (
-            <div key={todo.id} className="todo-item compact">
-              <button 
-                className={`checkbox`}
-                onClick={() => toggleTodo(todo.id, todo.completed)}
-              >
-                <Check size={14} strokeWidth={3} />
-              </button>
-              
-              <div className="todo-content row">
+            <div key={todo.id} className="todo-item compact" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button 
+                  className={`checkbox`}
+                  onClick={() => toggleTodo(todo.id, todo.completed)}
+                >
+                  <Check size={14} strokeWidth={3} />
+                </button>
                 <span className="todo-text">{todo.text}</span>
-                <span className={`assignee ${todo.assignee}`}>
-                  {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
-                </span>
-                {(todo.due_date || todo.created_at) && (
-                  <span className="todo-date">
-                    <Calendar size={10} />
-                    {format(new Date(todo.due_date || todo.created_at), 'MM/dd HH:mm', { locale: ko })}
-                  </span>
-                )}
               </div>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                <button className="delete-btn" onClick={() => handlePoke(todo.text)} title="상대방 콕 찌르기">
-                  <Bell size={16} />
-                </button>
-                <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>
-                  <Trash2 size={16} />
-                </button>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', paddingLeft: '36px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span className={`assignee ${todo.assignee}`}>
+                    {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
+                  </span>
+                  {(todo.due_date || todo.created_at) && (
+                    <span className="todo-date">
+                      <Calendar size={10} />
+                      {format(new Date(todo.due_date || todo.created_at), 'MM/dd HH:mm', { locale: ko })}
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <button className="delete-btn" onClick={() => handlePoke(todo.text)} title="상대방 콕 찌르기">
+                    <Bell size={16} />
+                  </button>
+                  <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             </div>
           ))
@@ -251,21 +255,35 @@ export default function App() {
           {viewCompleted && (
             <div className="todo-list glass-container" style={{ padding: '8px', marginTop: '12px' }}>
               {completedTodos.map(todo => (
-                <div key={todo.id} className="todo-item compact completed">
-                  <button 
-                    className="checkbox checked"
-                    onClick={() => toggleTodo(todo.id, todo.completed)}
-                  >
-                    <Check size={14} strokeWidth={3} />
-                  </button>
-                  
-                  <div className="todo-content row">
+                <div key={todo.id} className="todo-item compact completed" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button 
+                      className="checkbox checked"
+                      onClick={() => toggleTodo(todo.id, todo.completed)}
+                    >
+                      <Check size={14} strokeWidth={3} />
+                    </button>
                     <span className="todo-text">{todo.text}</span>
                   </div>
-
-                  <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>
-                    <Trash2 size={16} />
-                  </button>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', paddingLeft: '36px' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span className={`assignee ${todo.assignee}`}>
+                        {todo.assignee === 'both' ? '쀼' : todo.assignee === 'me' ? '가은' : '경민'}
+                      </span>
+                      {(todo.due_date || todo.created_at) && (
+                        <span className="todo-date">
+                          <Calendar size={10} />
+                          {format(new Date(todo.due_date || todo.created_at), 'MM/dd HH:mm', { locale: ko })}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -275,7 +293,7 @@ export default function App() {
 
       {/* FAB Add Button */}
       <button className="fab" onClick={() => setIsModalOpen(true)}>
-        <Plus size={24} />
+        <Heart fill="#ffb6c1" color="#ffb6c1" size={24} />
       </button>
 
       {/* Modal */}
@@ -337,7 +355,7 @@ export default function App() {
             </div>
 
             <button type="submit" className="submit-btn" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <PlusCircle size={20} />
+              <Heart fill="#ffb6c1" color="#ffb6c1" size={20} />
               추가하기
             </button>
           </form>
