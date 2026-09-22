@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { Plus, Check, Heart, Trash2, Calendar, X, Bell, RotateCcw, ThumbsUp, Tag, Repeat } from 'lucide-react'
+import { Plus, Check, Heart, Trash2, Calendar, X, Bell, RotateCcw, ThumbsUp, Tag, Repeat, Send } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import confetti from 'canvas-confetti'
 import { format } from 'date-fns'
@@ -44,6 +44,8 @@ export default function App() {
   const [viewCompleted, setViewCompleted] = useState(false)
   const [viewDeleted, setViewDeleted] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  
+  const [quickAddText, setQuickAddText] = useState('')
   
   const [toast, setToast] = useState(null)
   const showToast = (msg) => {
@@ -139,6 +141,25 @@ export default function App() {
       setSelectedHour('6');
     }
     setIsModalOpen(true)
+  }
+
+  const handleQuickAdd = async (e) => {
+    if (e && e.preventDefault) e.preventDefault()
+    if (!quickAddText.trim()) return
+
+    const todoData = { 
+      text: quickAddText, 
+      assignee: 'both',
+      category: '',
+      recurrence: 'none',
+      due_date: null
+    }
+
+    const { data, error } = await supabase.from('todos').insert([todoData]).select()
+    if (!error && data) {
+      setTodos([data[0], ...todos])
+      setQuickAddText('')
+    }
   }
 
   const saveTodo = async (e) => {
@@ -550,10 +571,18 @@ export default function App() {
         </div>
       )}
 
-      {/* FAB Add Button */}
-      <button className="fab" onClick={openAddModal}>
-        <Heart fill="#ffb6c1" color="#ffb6c1" size={24} />
-      </button>
+      {/* Quick Add Bar */}
+      <form className="quick-add-bar" onSubmit={handleQuickAdd}>
+        <input 
+          type="text" 
+          placeholder="새로운 할 일을 입력하세요..." 
+          value={quickAddText}
+          onChange={(e) => setQuickAddText(e.target.value)}
+        />
+        <button type="submit" disabled={!quickAddText.trim()}>
+          <Send size={18} />
+        </button>
+      </form>
 
       {/* Modal */}
       <div 
