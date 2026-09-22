@@ -37,8 +37,8 @@ export default async function handler(req, res) {
 
     let title = '💌 부탁이 도착했어요!';
     let body = taskText 
-      ? `${sender}님이 '${taskText}' 할 일을 예쁘게 부탁했어요! 🙏`
-      : `${sender}님이 할 일을 부탁하고 싶어 해요! ✨`;
+      ? `${sender}님이 '${taskText}' 할 일을 부탁했어요! 🙏`
+      : `${sender}님이 할 일을 부탁했어요! 🙏`;
 
     if (isCompliment) {
       title = '😍 쓰담쓰담!';
