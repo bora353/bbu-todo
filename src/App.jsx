@@ -244,7 +244,7 @@ export default function App() {
           </div>
         ) : (
           uncompletedTodos.map(todo => (
-            <div key={todo.id} className="todo-item compact" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
+            <div key={todo.id} className="todo-item compact" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <button 
                   className={`checkbox`}
@@ -300,7 +300,7 @@ export default function App() {
           {viewCompleted && (
             <div className="todo-list glass-container" style={{ padding: '8px', marginTop: '12px' }}>
               {completedTodos.map(todo => (
-                <div key={todo.id} className="todo-item compact completed" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px' }}>
+                <div key={todo.id} className="todo-item compact completed" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button 
                       className="checkbox checked"
@@ -356,7 +356,7 @@ export default function App() {
           {viewDeleted && (
             <div className="todo-list glass-container" style={{ padding: '8px', marginTop: '12px' }}>
               {deletedTodos.map(todo => (
-                <div key={todo.id} className="todo-item compact completed" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '4px', opacity: 0.5 }}>
+                <div key={todo.id} className="todo-item compact completed" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0px', opacity: 0.5 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span className="todo-text">{todo.text}</span>
                   </div>
